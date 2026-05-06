@@ -287,7 +287,7 @@ func fetchJiraData(projectKey string) (map[string]interface{}, error) {
 
 	// JQL to fetch issues for the project
 	jql := fmt.Sprintf("project = %s ORDER BY created DESC", projectKey)
-	apiURL := fmt.Sprintf("%s/rest/api/3/search?jql=%s&maxResults=100", url, jql)
+	apiURL := fmt.Sprintf("%s/rest/api/3/search/jql?jql=%s&maxResults=100", url, jql)
 
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", apiURL, nil)
