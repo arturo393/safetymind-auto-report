@@ -9,13 +9,11 @@ services:
       - JIRA_URL=${JIRA_URL}
       - JIRA_EMAIL=${JIRA_EMAIL}
       - JIRA_API_TOKEN=${JIRA_API_TOKEN}
-      - OLLAMA_URL=${OLLAMA_URL:-http://172.19.0.1:11434}
     volumes:
       - ./reports:/app/reports
-      - ./jira-api/templates:/app/templates:ro
+      - ./templates:/app/templates:ro
+      - ./config:/app/config:ro
     restart: unless-stopped
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s

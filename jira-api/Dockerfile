@@ -1,27 +1,23 @@
-FROM golang:1.21-bullseye AS builder
-WORKDIR /build
-COPY jira-api/go.mod ./
-RUN go get github.com/gin-gonic/gin@v1.9.1 && \
-    go get gopkg.in/yaml.v3@v3.0.1
-COPY jira-api/main.go ./
-RUN go build -o jira-api .
-
-# Final Stage
-FROM ubuntu:22.04
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    wkhtmltopdf \
-    ca-certificates \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.11-slim
 
 WORKDIR /app
-COPY --from=builder /build/jira-api .
-COPY jira-api/config/ ./config/
-COPY jira-api/templates/ ./templates/
-COPY .env .env
 
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY src/ ./src/
+COPY config/ ./config/
+COPY templates/ ./templates/
+COPY generate_report.py ./
+COPY run.py ./
+
+# Create reports directory
 RUN mkdir -p /app/reports
 
+# Expose port
 EXPOSE 8080
-ENV PORT=8080
-CMD ["/app/jira-api"]
+
+# Run the application
+CMD ["python", "run.py"]
