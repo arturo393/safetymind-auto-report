@@ -9,7 +9,7 @@ class JiraClient:
 
     def connect(self):
         try:
-            self.jira = jira.JIRA(server=self.server, basic_auth=(self.email, self.token))
+            self.jira = jira.Jira(server=self.server, basic_auth=(self.email, self.token))
             # Test connection by getting current user
             user = self.jira.myself()
             print(f"Connected as: {user['displayName']}")
