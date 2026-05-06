@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -475,9 +477,10 @@ func generateAIsummary(jiraData map[string]interface{}) (string, error) {
 }
 
 func generateHTML(reportType string, data map[string]interface{}, description string) (string, error) {
-	templateFile := filepath.Join(templatesDir, reportType+".html")
+	baseTemplate := filepath.Join(templatesDir, "base.html")
+	reportTemplate := filepath.Join(templatesDir, reportType+".html")
 
-	if _, err := os.Stat(templateFile); err != nil {
+	if _, err := os.Stat(reportTemplate); err != nil {
 		html := fmt.Sprintf(`<!DOCTYPE html">
 <html><head><meta charset="UTF-8"><title>Report</title></head>
 <body><h1>SafetyMind Report: %s</h1>
@@ -488,60 +491,41 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 		return html, nil
 	}
 
-	template, err := os.ReadFile(templateFile)
+	// Parse templates with base + specific template
+	tmpl, err := template.ParseFiles(baseTemplate, reportTemplate)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("template parse error: %v", err)
 	}
-	html := string(template)
-	
-	// Generate HTML for completed tasks
-	completedTasksHTML := "<p>No se cerraron tareas en este periodo.</p>"
-	if ct, ok := data["completed_tasks"].([]map[string]interface{}); ok && len(ct) > 0 {
-		var buf bytes.Buffer
-		buf.WriteString("<table><thead><tr><th>ID</th><th>Tarea Completada</th><th>Fecha</th></tr></thead><tbody>")
-		for _, task := range ct {
-			key := fmt.Sprintf("%v", task["key"])
-			summary := fmt.Sprintf("%v", task["summary"])
-			updated := fmt.Sprintf("%v", task["updated"])
-			buf.WriteString(fmt.Sprintf("<tr><td>%s</td><td>%s</td><td>%s</td></tr>", key, summary, updated))
-		}
-		buf.WriteString("</tbody></table>")
-		completedTasksHTML = buf.String()
-	}
-	
-	// Generate HTML for pending tasks
-	pendingTasksHTML := "<p>No hay tareas pendientes.</p>"
-	if pt, ok := data["pending_tasks"].([]map[string]interface{}); ok && len(pt) > 0 {
-		var buf bytes.Buffer
-		buf.WriteString("<ul class=\"task-list\">")
-		for i, task := range pt {
-			if i >= 5 {
-				break
-			}
-			summary := fmt.Sprintf("%v", task["summary"])
-			priority := fmt.Sprintf("%v", task["priority"])
-			buf.WriteString(fmt.Sprintf("<li class=\"task-item\">Procesar: <strong>%s</strong> (Prioridad: %s)</li>", summary, priority))
-		}
-		buf.WriteString("</ul>")
-		pendingTasksHTML = buf.String()
-	}
-	
-	// Generate executive summary section
-	executiveSummary := ""
-	if description != "" {
-		executiveSummary = fmt.Sprintf(`<div class="progress-section"><h2>Resumen Ejecutivo</h2><p>%s</p></div>`, description)
-	}
-	
-	// Replace placeholders
-	html = replacePlaceholders(html, data)
-	html = replacePlaceholders(html, map[string]interface{}{
-		"description":            description,
-		"executive_summary_section": executiveSummary,
-		"completed_tasks_html":   completedTasksHTML,
-		"pending_tasks_html":     pendingTasksHTML,
-	})
 
-	return html, nil
+	// Add custom functions for templates
+	funcMap := template.FuncMap{
+		"add": func(a, b int) int { return a + b },
+		"lt":  func(a, b int) bool { return a < b },
+	}
+	tmpl = tmpl.Funcs(funcMap)
+
+	// Prepare template data
+	tmplData := map[string]interface{}{
+		"title":            fmt.Sprintf("SafetyMind - %s", strings.Title(reportType)),
+		"report_type":      fmt.Sprintf("Informe de %s", strings.Title(reportType)),
+		"project_name":     data["project_key"],
+		"year":             time.Now().Year(),
+		"report_date":      data["report_date"],
+		"percentage":       data["percentage"],
+		"critical_path":    []interface{}{}, // TODO: implement
+		"blockers":         "",              // TODO: get from config
+		"completed_tasks":  data["completed_tasks"],
+		"pending_tasks":    data["pending_tasks"],
+		"description":      description,
+	}
+
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, tmplData)
+	if err != nil {
+		return "", fmt.Errorf("template execute error: %v", err)
+	}
+
+	return buf.String(), nil
 }
 
 	template, err := os.ReadFile(templateFile)

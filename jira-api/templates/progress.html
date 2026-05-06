@@ -1,163 +1,96 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Progress Report - \VAR{project_key}</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-        :root {
-            --safetymind-primary: #ffed01;
-            --safetymind-black: #000000;
-            --safetymind-gray: #666666;
-            --safetymind-light-gray: #f4f4f4;
-            --safetymind-alert: #d32f2f;
-            --safetymind-warning-bg: #fff3cd;
-        }
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            color: #333; 
-            margin: 40px; 
-            line-height: 1.5; 
-            font-size: 11pt; 
-        }
-        header { 
-            border-bottom: 2px solid var(--safetymind-primary); 
-            padding-bottom: 20px; 
-            margin-bottom: 30px; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo { font-weight: 700; font-size: 18pt; color: var(--safetymind-black); }
-        .accent { color: var(--safetymind-primary); }
-        h1 { 
-            font-size: 24pt; 
-            margin: 0; 
-            color: var(--safetymind-black); 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-        }
-        h2 { 
-            font-size: 14pt; 
-            color: var(--safetymind-black); 
-            border-left: 5px solid var(--safetymind-primary); 
-            padding-left: 10px; 
-            margin-top: 30px; 
-            margin-bottom: 15px;
-        }
-        p { margin-bottom: 15px; text-align: justify; }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 15px; 
-            font-size: 10pt;
-        }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px 12px; 
-            text-align: left; 
-        }
-        th { 
-            background-color: var(--safetymind-light-gray); 
-            color: var(--safetymind-black); 
-            font-weight: 700;
-        }
-        .progress-section { 
-            background: #f4f4f4; 
-            padding: 20px; 
-            border-radius: 4px; 
-            margin-bottom: 20px; 
-        }
-        .progress-bar-bg { background: #ddd; height: 10px; border-radius: 5px; width: 100%; }
-        .progress-bar-fill { background: var(--safetymind-primary); height: 10px; border-radius: 5px; }
-        .percentage { font-size: 24pt; font-weight: bold; color: var(--safetymind-black); }
-        .rag-status { 
-            padding: 5px 10px; 
-            border-radius: 4px; 
-            font-weight: bold; 
-            color: white; 
-            margin-left: 5px;
-        }
-        .rag-green { background: #4caf50; }
-        .rag-amber { background: #ff9800; }
-        .blocker-box { 
-            background: var(--safetymind-warning-bg); 
-            padding: 15px; 
-            border-left: 4px solid #ffecb5; 
-        }
-        .task-list { margin-top: 15px; }
-        .task-item { 
-            padding: 8px; 
-            margin: 5px 0; 
-            background: var(--safetymind-light-gray); 
-            border-left: 3px solid var(--safetymind-primary); 
-        }
-        footer {
-            margin-top: 50px; 
-            text-align: center; 
-            font-size: 8pt; 
-            color: var(--safetymind-gray);
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <header>
+{{ define "content" }}
+<!-- Executive Summary with RAG Status -->
+<div class="progress-section">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <h1>Informe de Avance</h1>
-            <span style="font-size: 12pt; color: var(--safetymind-gray);">Proyecto: \VAR{project_key}</span>
+            <span style="font-size: 14pt; font-weight: bold;">Salud del Proyecto</span>
         </div>
-        <div class="logo">SAFETY<span class="accent">MIND</span></div>
-    </header>
-
-    <!-- Project Health with RAG Status -->
-    <div class="progress-section">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <span style="font-size: 14pt; font-weight: bold;">Salud del Proyecto</span>
-            </div>
-            <div>
-                <span class="rag-status rag-green">ALCANCE: OK</span>
-                <span class="rag-status \VAR{rag_time_class}">TIEMPO: \VAR{rag_time_status}</span>
-            </div>
+        <div>
+            <!-- RAG Status Indicators -->
+            <span style="padding: 5px 10px; background: #4caf50; color: white; border-radius: 4px; font-weight: bold;">ALCANCE: OK</span>
+            <span style="padding: 5px 10px; background: {{ if lt .percentage 50 }}#ff9800{{ else }}#4caf50{{ end }}; color: white; border-radius: 4px; font-weight: bold;">TIEMPO: {{ if lt .percentage 50 }}ATRASADO{{ else }}OK{{ end }}</span>
         </div>
+    </div>
 
-        <div style="margin-top: 20px;">
-            <strong>Progreso General Completado</strong>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <span class="percentage">\VAR{percentage}%</span>
-                <div style="width: 80%;">
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: \VAR{percentage}%;"></div>
-                    </div>
+    <div style="margin-top: 20px;">
+        <strong>Progreso General Completado</strong>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="percentage">{{ .percentage }}%</span>
+            <div style="width: 80%;">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: {{ .percentage }}%;"></div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Executive Summary -->
-    \VAR{executive_summary_section}
+<!-- Critical Path / Risks (PMBOK Risk Management) -->
+<h2>Gestión de Riesgos y Bloqueos</h2>
+{{ if .critical_path }}
+<div class="critical-path">
+    <p><strong>⚠️ Atención Requerida (Ruta Crítica):</strong></p>
+    <ul>
+        {{ range .critical_path }}
+        <li><strong>{{ .key }}</strong>: {{ .summary }} <br> <span style="font-size: 0.9em; color: #d32f2f;">{{ .reason }}</span></li>
+        {{ end }}
+    </ul>
+</div>
+{{ end }}
 
-    <!-- Issues Summary -->
-    <div class="progress-section">
-        <h2>Resumen de Issues</h2>
-        <p><strong>Total Issues:</strong> \VAR{total_issues}</p>
-        <p><strong>Completados:</strong> \VAR{done_issues}</p>
-        <p><strong>En Progreso:</strong> \VAR{in_progress_issues}</p>
-        <p><strong>Abiertos:</strong> \VAR{open_issues}</p>
-    </div>
+{{ if .blockers }}
+<div class="blocker-box" style="margin-top: 15px;">
+    <p><strong>⛔ Impedimentos Actuales:</strong></p>
+    <p>{{ .blockers }}</p>
+</div>
+{{ else }}
+<div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-left: 4px solid #4caf50;">
+    <p>No hay bloqueos activos reportados.</p>
+</div>
+{{ end }}
 
-    <!-- Completed Tasks -->
-    <h2>Hitos Alcanzados (Último Periodo)</h2>
-    \VAR{completed_tasks_html}
+<!-- Completed Work (Retrospective) -->
+<h2>Hitos Alcanzados (Último Periodo)</h2>
+{{ if .completed_tasks }}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tarea Completada</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ range .completed_tasks }}
+        <tr>
+            <td>{{ .key }}</td>
+            <td>{{ .summary }}</td>
+            <td>{{ .updated }}</td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+{{ else }}
+<p>No se cerraron tareas en este periodo.</p>
+{{ end }}
 
-    <!-- Pending Tasks -->
-    <h2>Próximos Pasos (Planificación)</h2>
-    \VAR{pending_tasks_html}
+<!-- Next Steps (Lookahead) -->
+<h2>Próximos Pasos (Planificación)</h2>
+<ul>
+    {{ $limit := 5 }}
+    {{ $count := 0 }}
+    {{ range .pending_tasks }}
+        {{ if lt $count $limit }}
+        <li>Procesar: <strong>{{ .summary }}</strong> ({{ .priority }})</li>
+        {{ $count = add $count 1 }}
+        {{ end }}
+    {{ end }}
+</ul>
 
-    <footer>
-        © \VAR{report_date} SafetyMind - Documento Confidencial generado automáticamente. | \VAR{report_date}
-    </footer>
-</body>
-</html>
+{{ if .description }}
+<div class="progress-section">
+    <h2>Resumen Ejecutivo</h2>
+    <p>{{ .description }}</p>
+</div>
+{{ end }}
+{{ end }}
