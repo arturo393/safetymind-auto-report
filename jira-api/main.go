@@ -286,7 +286,7 @@ func fetchJiraData(projectKey string) (map[string]interface{}, error) {
 	token := os.Getenv("JIRA_API_TOKEN")
 
 	// JQL to fetch issues for the project
-	jql := fmt.Sprintf("project = %s ORDER BY created DESC", projectKey)
+	jql := fmt.Sprintf(`project = "%s" ORDER BY created DESC`, projectKey)
 	apiURL := fmt.Sprintf("%s/rest/api/3/search/jql?jql=%s&maxResults=100", url, jql)
 
 	client := &http.Client{}
@@ -307,7 +307,15 @@ func fetchJiraData(projectKey string) (map[string]interface{}, error) {
 	var result map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&result)
 
-	issues := result["issues"].([]interface{})
+	// Check for API errors
+	if errorMessages, ok := result["errorMessages"].([]interface{}); ok && len(errorMessages) > 0 {
+		return nil, fmt.Errorf("Jira API error: %v", errorMessages)
+	}
+
+	issues, ok := result["issues"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("no issues found in response")
+	}
 	totalIssues := len(issues)
 
 	// Calculate metrics
