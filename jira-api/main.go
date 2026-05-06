@@ -491,18 +491,27 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 		return html, nil
 	}
 
-	// Parse templates with base + specific template
-	tmpl, err := template.ParseFiles(baseTemplate, reportTemplate)
+	// Read and combine templates manually
+	baseContent, err := os.ReadFile(baseTemplate)
+	if err != nil {
+		return "", fmt.Errorf("failed to read base template: %v", err)
+	}
+	reportContent, err := os.ReadFile(reportTemplate)
+	if err != nil {
+		return "", fmt.Errorf("failed to read report template: %v", err)
+	}
+
+	// Combine: replace {{ template "content" . }} in base with report content
+	combined := strings.Replace(string(baseContent), `{{ template "content" . }}`, string(reportContent), 1)
+
+	// Parse combined template
+	tmpl, err := template.New("report").Funcs(template.FuncMap{
+		"add": func(a, b int) int { return a + b },
+		"lt":  func(a, b int) bool { return a < b },
+	}).Parse(combined)
 	if err != nil {
 		return "", fmt.Errorf("template parse error: %v", err)
 	}
-
-	// Add custom functions for templates
-	funcMap := template.FuncMap{
-		"add": func(a, b int) int { return a + b },
-		"lt":  func(a, b int) bool { return a < b },
-	}
-	tmpl = tmpl.Funcs(funcMap)
 
 	// Calculate RAG status
 	percentage := 0
@@ -518,19 +527,19 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 
 	// Prepare template data
 	tmplData := map[string]interface{}{
-		"title":            fmt.Sprintf("SafetyMind - %s", strings.Title(reportType)),
-		"report_type":      fmt.Sprintf("Informe de %s", strings.Title(reportType)),
-		"project_name":     data["project_key"],
-		"year":             time.Now().Year(),
-		"report_date":      data["report_date"],
-		"percentage":       percentage,
-		"time_color":       timeColor,
-		"time_status":      timeStatus,
-		"critical_path":    []interface{}{}, // TODO: implement
-		"blockers":         "",              // TODO: get from config
-		"completed_tasks":  data["completed_tasks"],
-		"pending_tasks":    data["pending_tasks"],
-		"description":      description,
+		"title":           fmt.Sprintf("SafetyMind - %s", strings.Title(reportType)),
+		"report_type":     fmt.Sprintf("Informe de %s", strings.Title(reportType)),
+		"project_name":    data["project_key"],
+		"year":            time.Now().Year(),
+		"report_date":     data["report_date"],
+		"percentage":      percentage,
+		"time_color":      timeColor,
+		"time_status":     timeStatus,
+		"critical_path":   []interface{}{},
+		"blockers":        "",
+		"completed_tasks": data["completed_tasks"],
+		"pending_tasks":   data["pending_tasks"],
+		"description":     description,
 	}
 
 	var buf bytes.Buffer
