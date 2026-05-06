@@ -34,7 +34,7 @@ def get_jira_client():
     jira_token = os.getenv("JIRA_API_TOKEN")
     client = JiraClient(jira_url, jira_email, jira_token)
     if not client.connect():
-        raise Exception("Failed to connect to Jira")
+        raise Exception(f"Failed to connect to Jira. URL: {jira_url}, Email: {jira_email}")
     return client
 
 @app.route('/health', methods=['GET'])
