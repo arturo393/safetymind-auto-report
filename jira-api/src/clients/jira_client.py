@@ -1,4 +1,4 @@
-from jira import JIRA
+from atlassian import Jira
 
 class JiraClient:
     def __init__(self, server, email, token):
