@@ -324,10 +324,28 @@ func fetchJiraData(projectKey string) (map[string]interface{}, error) {
 	openIssues := 0
 
 	for _, issue := range issues {
-		issueMap := issue.(map[string]interface{})
-		fields := issueMap["fields"].(map[string]interface{})
-		status := fields["status"].(map[string]interface{})
-		statusName := status["name"].(string)
+		issueMap, ok := issue.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		
+		fields, ok := issueMap["fields"].(map[string]interface{})
+		if !ok {
+			openIssues++
+			continue
+		}
+		
+		status, ok := fields["status"].(map[string]interface{})
+		if !ok {
+			openIssues++
+			continue
+		}
+		
+		statusName, ok := status["name"].(string)
+		if !ok {
+			openIssues++
+			continue
+		}
 
 		switch statusName {
 		case "Done", "Completed", "Closed":
