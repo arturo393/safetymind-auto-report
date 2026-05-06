@@ -1,8 +1,13 @@
 from flask import Flask, request, jsonify, send_file
 import os
+import sys
 import yaml
 from datetime import datetime
 from dotenv import load_dotenv
+
+# Add src to path so we can import modules
+sys.path.insert(0, os.path.join(os.getcwd(), 'src'))
+
 from clients.jira_client import JiraClient
 from reporting.report_context import ReportContext
 from jinja2 import Environment, FileSystemLoader
