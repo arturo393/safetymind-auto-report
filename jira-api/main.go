@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -527,9 +526,19 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 	}
 
 	// Prepare template data
+	reportTypeTitle := map[string]string{
+		"progress": "Informe de Avance",
+		"kickoff":  "Informe de Kickoff",
+		"final":    "Informe Final de Cierre",
+	}
+	title := reportTypeTitle[reportType]
+	if title == "" {
+		title = fmt.Sprintf("Informe de %s", strings.Title(reportType))
+	}
+
 	tmplData := map[string]interface{}{
-		"title":           fmt.Sprintf("SafetyMind - %s", strings.Title(reportType)),
-		"report_type":     fmt.Sprintf("Informe de %s", strings.Title(reportType)),
+		"title":           fmt.Sprintf("SafetyMind - %s", title),
+		"report_type":     title,
 		"project_name":    data["project_key"],
 		"year":            time.Now().Year(),
 		"report_date":     data["report_date"],
