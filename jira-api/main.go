@@ -322,6 +322,8 @@ func fetchJiraData(projectKey string) (map[string]interface{}, error) {
 	doneIssues := 0
 	inProgressIssues := 0
 	openIssues := 0
+	completedTasks := []map[string]interface{}{}
+	pendingTasks := []map[string]interface{}{}
 
 	for _, issue := range issues {
 		issueMap, ok := issue.(map[string]interface{})
@@ -347,13 +349,44 @@ func fetchJiraData(projectKey string) (map[string]interface{}, error) {
 			continue
 		}
 
+		issueKey := ""
+		if k, ok := issueMap["key"].(string); ok {
+			issueKey = k
+		}
+		
+		summary := ""
+		if s, ok := fields["summary"].(string); ok {
+			summary = s
+		}
+
 		switch statusName {
 		case "Done", "Completed", "Closed":
 			doneIssues++
+			completedTasks = append(completedTasks, map[string]interface{}{
+				"key":     issueKey,
+				"summary": summary,
+				"updated": fields["updated"],
+			})
 		case "In Progress", "In Review", "Testing":
 			inProgressIssues++
+			priority := "Normal"
+			if p, ok := fields["priority"].(map[string]interface{}); ok {
+				if pn, ok := p["name"].(string); ok {
+					priority = pn
+				}
+			}
+			pendingTasks = append(pendingTasks, map[string]interface{}{
+				"key":      issueKey,
+				"summary":  summary,
+				"priority": priority,
+			})
 		default:
 			openIssues++
+			pendingTasks = append(pendingTasks, map[string]interface{}{
+				"key":      issueKey,
+				"summary":  summary,
+				"priority": "Normal",
+			})
 		}
 	}
 
@@ -381,6 +414,15 @@ func fetchJiraData(projectKey string) (map[string]interface{}, error) {
 		"done_issues":        doneIssues,
 		"in_progress_issues": inProgressIssues,
 		"open_issues":        openIssues,
+		"completed_tasks":    completedTasks,
+		"pending_tasks":      pendingTasks,
+		"rag_time_class":     "rag-green",
+		"rag_time_status":    "OK",
+	}
+
+	if percentage < 50 {
+		data["rag_time_class"] = "rag-amber"
+		data["rag_time_status"] = "ATRASADO"
 	}
 
 	return data, nil
@@ -436,7 +478,7 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 	templateFile := filepath.Join(templatesDir, reportType+".html")
 
 	if _, err := os.Stat(templateFile); err != nil {
-		html := fmt.Sprintf(`<!DOCTYPE html>
+		html := fmt.Sprintf(`<!DOCTYPE html">
 <html><head><meta charset="UTF-8"><title>Report</title></head>
 <body><h1>SafetyMind Report: %s</h1>
 <p><strong>Project:</strong> %s</p>
@@ -445,6 +487,62 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 			reportType, data["project_key"], data["report_date"], description)
 		return html, nil
 	}
+
+	template, err := os.ReadFile(templateFile)
+	if err != nil {
+		return "", err
+	}
+	html := string(template)
+	
+	// Generate HTML for completed tasks
+	completedTasksHTML := "<p>No se cerraron tareas en este periodo.</p>"
+	if ct, ok := data["completed_tasks"].([]map[string]interface{}); ok && len(ct) > 0 {
+		var buf bytes.Buffer
+		buf.WriteString("<table><thead><tr><th>ID</th><th>Tarea Completada</th><th>Fecha</th></tr></thead><tbody>")
+		for _, task := range ct {
+			key := fmt.Sprintf("%v", task["key"])
+			summary := fmt.Sprintf("%v", task["summary"])
+			updated := fmt.Sprintf("%v", task["updated"])
+			buf.WriteString(fmt.Sprintf("<tr><td>%s</td><td>%s</td><td>%s</td></tr>", key, summary, updated))
+		}
+		buf.WriteString("</tbody></table>")
+		completedTasksHTML = buf.String()
+	}
+	
+	// Generate HTML for pending tasks
+	pendingTasksHTML := "<p>No hay tareas pendientes.</p>"
+	if pt, ok := data["pending_tasks"].([]map[string]interface{}); ok && len(pt) > 0 {
+		var buf bytes.Buffer
+		buf.WriteString("<ul class=\"task-list\">")
+		for i, task := range pt {
+			if i >= 5 {
+				break
+			}
+			summary := fmt.Sprintf("%v", task["summary"])
+			priority := fmt.Sprintf("%v", task["priority"])
+			buf.WriteString(fmt.Sprintf("<li class=\"task-item\">Procesar: <strong>%s</strong> (Prioridad: %s)</li>", summary, priority))
+		}
+		buf.WriteString("</ul>")
+		pendingTasksHTML = buf.String()
+	}
+	
+	// Generate executive summary section
+	executiveSummary := ""
+	if description != "" {
+		executiveSummary = fmt.Sprintf(`<div class="progress-section"><h2>Resumen Ejecutivo</h2><p>%s</p></div>`, description)
+	}
+	
+	// Replace placeholders
+	html = replacePlaceholders(html, data)
+	html = replacePlaceholders(html, map[string]interface{}{
+		"description":            description,
+		"executive_summary_section": executiveSummary,
+		"completed_tasks_html":   completedTasksHTML,
+		"pending_tasks_html":     pendingTasksHTML,
+	})
+
+	return html, nil
+}
 
 	template, err := os.ReadFile(templateFile)
 	if err != nil {
