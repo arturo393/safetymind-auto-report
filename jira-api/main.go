@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -533,7 +534,7 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 	}
 	title := reportTypeTitle[reportType]
 	if title == "" {
-		title = fmt.Sprintf("Informe de %s", strings.Title(reportType))
+		title = fmt.Sprintf("Informe de %s", reportType)
 	}
 
 	tmplData := map[string]interface{}{
