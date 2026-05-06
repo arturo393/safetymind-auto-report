@@ -11,7 +11,7 @@ COPY src/ ./src/
 COPY config/ ./config/
 COPY templates/ ./templates/
 COPY generate_report.py ./
-COPY run.py ./
+COPY jira-api/api.py ./api.py
 
 # Create reports directory
 RUN mkdir -p /app/reports
@@ -20,4 +20,4 @@ RUN mkdir -p /app/reports
 EXPOSE 8080
 
 # Run the application
-CMD ["python", "run.py"]
+CMD ["python", "api.py"]
