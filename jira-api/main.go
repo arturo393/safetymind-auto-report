@@ -528,41 +528,6 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 	return buf.String(), nil
 }
 
-	template, err := os.ReadFile(templateFile)
-	if err != nil {
-		return "", err
-	}
-	html := string(template)
-	html = replacePlaceholders(html, data)
-	html = replacePlaceholders(html, map[string]interface{}{"description": description})
-
-	return html, nil
-}
-
-func replacePlaceholders(text string, data map[string]interface{}) string {
-	result := text
-	for k, v := range data {
-		placeholder := fmt.Sprintf("\\VAR{%s}", k)
-		result = replaceAll(result, placeholder, fmt.Sprintf("%v", v))
-	}
-	return result
-}
-
-func replaceAll(s, old, new string) string {
-	var buf bytes.Buffer
-	for {
-		i := bytes.Index([]byte(s), []byte(old))
-		if i < 0 {
-			buf.Write([]byte(s))
-			break
-		}
-		buf.Write([]byte(s[:i]))
-		buf.Write([]byte(new))
-		s = s[i+len(old):]
-	}
-	return buf.String()
-}
-
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.SetOutput(os.Stdout)
