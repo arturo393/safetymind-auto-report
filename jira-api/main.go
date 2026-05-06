@@ -504,6 +504,18 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 	}
 	tmpl = tmpl.Funcs(funcMap)
 
+	// Calculate RAG status
+	percentage := 0
+	if p, ok := data["percentage"].(int); ok {
+		percentage = p
+	}
+	timeColor := "#4caf50"
+	timeStatus := "OK"
+	if percentage < 50 {
+		timeColor = "#ff9800"
+		timeStatus = "ATRASADO"
+	}
+
 	// Prepare template data
 	tmplData := map[string]interface{}{
 		"title":            fmt.Sprintf("SafetyMind - %s", strings.Title(reportType)),
@@ -511,7 +523,9 @@ func generateHTML(reportType string, data map[string]interface{}, description st
 		"project_name":     data["project_key"],
 		"year":             time.Now().Year(),
 		"report_date":      data["report_date"],
-		"percentage":       data["percentage"],
+		"percentage":       percentage,
+		"time_color":       timeColor,
+		"time_status":      timeStatus,
 		"critical_path":    []interface{}{}, // TODO: implement
 		"blockers":         "",              // TODO: get from config
 		"completed_tasks":  data["completed_tasks"],

@@ -8,7 +8,7 @@
         <div>
             <!-- RAG Status Indicators -->
             <span style="padding: 5px 10px; background: #4caf50; color: white; border-radius: 4px; font-weight: bold;">ALCANCE: OK</span>
-            <span style="padding: 5px 10px; background: {{ if lt .percentage 50 }}#ff9800{{ else }}#4caf50{{ end }}; color: white; border-radius: 4px; font-weight: bold;">TIEMPO: {{ if lt .percentage 50 }}ATRASADO{{ else }}OK{{ end }}</span>
+            <span style="padding: 5px 10px; background: {{ .time_color }}; color: white; border-radius: 4px; font-weight: bold;">TIEMPO: {{ .time_status }}</span>
         </div>
     </div>
 
@@ -82,8 +82,8 @@
     {{ range .pending_tasks }}
         {{ if lt $count $limit }}
         <li>Procesar: <strong>{{ .summary }}</strong> ({{ .priority }})</li>
-        {{ $count = add $count 1 }}
         {{ end }}
+        {{ $count = add $count 1 }}
     {{ end }}
 </ul>
 
