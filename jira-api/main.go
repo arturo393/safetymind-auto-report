@@ -192,7 +192,8 @@ func generateReportHandler(c *gin.Context) {
 
 	htmlContent, err := generateHTML(req.ReportType, jiraData, description)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate HTML"})
+		log.Printf("HTML generation error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to generate HTML: %v", err)})
 		return
 	}
 
