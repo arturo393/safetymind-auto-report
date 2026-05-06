@@ -29,7 +29,7 @@ services:
     ports:
       - "8501:8501"
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+      - NEXT_PUBLIC_API_URL=http://172.18.0.2:8080
     depends_on:
       - jira-api
     restart: unless-stopped
