@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>{{ title }}</title>
+    <title>{{ .title }}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
         :root {
@@ -89,8 +89,8 @@
 <body>
     <header>
         <div>
-            <h1>{{ report_type }}</h1>
-            <span style="font-size: 12pt; color: var(--safetymind-gray);">Proyecto: {{ project_name }}</span>
+            <h1>{{ .report_type }}</h1>
+            <span style="font-size: 12pt; color: var(--safetymind-gray);">Proyecto: {{ .project_name }}</span>
         </div>
         <div class="logo">SAFETY<span class="accent">MIND</span></div>
     </header>
@@ -98,7 +98,7 @@
     {{ template "content" . }}
 
     <footer>
-        © {{ year }} SafetyMind - Documento Confidencial generado automáticamente. | {{ report_date }}
+        © {{ .year }} SafetyMind - Documento Confidencial generado automáticamente. | {{ .report_date }}
     </footer>
 </body>
 </html>
