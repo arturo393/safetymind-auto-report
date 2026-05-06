@@ -1,0 +1,16 @@
+/**
+ * SAFETYMIND INDUSTRIAL UI - Z-INDEX SYSTEM
+ * Following React Development Standard V4.0
+ */
+export const Z_INDEX = {
+  BACKGROUND: 0,
+  BASE: 1,
+  DASHBOARD_CARDS: 10,
+  STICKY_NAV: 50,
+  POPOVER: 60,
+  MODAL_OVERLAY: 100,
+  MODAL_CONTENT: 110,
+  TOOLTIP: 150,
+  TOAST: 200,
+  CRITICAL_ALERT: 999,
+} as const;

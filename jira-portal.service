@@ -1,0 +1,15 @@
+[Unit]
+Description=SafetyMind Jira Automation Portal (Frontend)
+After=network.target
+
+[Service]
+User=arturo
+WorkingDirectory=/home/arturo/jira-automation/portal
+ExecStart=/home/arturo/.nvm/versions/node/v20.20.2/bin/npm run start -- -p 8501
+Environment=PATH=/home/arturo/.nvm/versions/node/v20.20.2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

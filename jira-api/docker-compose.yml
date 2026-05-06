@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  jira-api:
+    image: safetymind-jira-api:latest
+    container_name: safetymind-jira-api
+    ports:
+      - "8080:8080"
+    environment:
+      - JIRA_URL=https://safetymind-team-ogsoj2pu.atlassian.net
+      - JIRA_EMAIL=a.veras@gmail.com
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN}
+      - OLLAMA_HOST=http://host.docker.internal:11434
+      - PORT=8080
+    restart: unless-stopped
+    volumes:
+      - ./reports:/app
+
+networks:
+  default:
+    name: safetymind-net

@@ -1,0 +1,13 @@
+[Unit]
+Description=SafetyMind Report Generator Web App
+After=network.target
+
+[Service]
+User=arturo
+WorkingDirectory=/home/arturo/jira-automation
+ExecStart=/home/arturo/jira-automation/venv/bin/python3 api/main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
