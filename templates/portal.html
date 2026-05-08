@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafetyMind - Generador de Reportes</title>
+    <style>
+        @font-face {
+            font-family: 'Inter';
+            src: url('/static/fonts/Inter-Regular.ttf');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('/static/fonts/Inter-Bold.ttf');
+            font-weight: 700;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('/static/fonts/Inter-SemiBold.ttf');
+            font-weight: 600;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #f5f5f5;
+            min-height: 100vh;
+        }
+        .app-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border-bottom: 2px solid #ffed01;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .app-header h1 span { color: #ffed01; }
+        .app-header .badge {
+            background: #ffed01;
+            color: #0a0a0a;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #6b7280;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            margin-bottom: 30px;
+        }
+        select, button {
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        select {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            color: #f5f5f5;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+        select:hover { border-color: #555; }
+        select:focus { outline: none; border-color: #ffed01; }
+        
+        .report-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .report-type {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .report-type:hover { border-color: #555; transform: translateY(-2px); }
+        .report-type.selected { border-color: #ffed01; background: #222; }
+        .report-type .icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .report-type .name {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .report-type .desc {
+            font-size: 11px;
+            color: #999;
+            line-height: 1.4;
+        }
+        
+        .btn-generate {
+            background: #ffed01;
+            color: #0a0a0a;
+            border: none;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 16px;
+            margin-top: 10px;
+        }
+        .btn-generate:hover { background: #ffe033; transform: translateY(-1px); }
+        .btn-generate:active { transform: translateY(0); }
+        .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+        .status.loading {
+            display: block;
+            background: #1a1a1a;
+            border: 1px solid #333;
+        }
+        .status.success {
+            display: block;
+            background: #0a2a0a;
+            border: 1px solid #22c55e;
+        }
+        .status.error {
+            display: block;
+            background: #2a0a0a;
+            border: 1px solid #ef4444;
+        }
+        
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #22c55e;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+        .download-link:hover { background: #16a34a; }
+        
+        .reports-list {
+            margin-top: 40px;
+            border-top: 1px solid #222;
+            padding-top: 30px;
+        }
+        .reports-list h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .report-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .report-item .name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .report-item .meta {
+            font-size: 11px;
+            color: #666;
+        }
+        .report-item a {
+            color: #ffed01;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .report-item a:hover { text-decoration: underline; }
+        
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255,237,1,0.3);
+            border-radius: 50%;
+            border-top-color: #ffed01;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .tech-badge {
+            display: inline-block;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            color: #999;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1>SAFETY<span>MIND</span></h1>
+        <div class="badge">Generador de Reportes</div>
+    </div>
+    
+    <div class="container">
+        <div class="form-group">
+            <div class="section-label">Proyecto</div>
+            <select id="projectSelect">
+                <option value="">Cargando proyectos...</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <div class="section-label">Tipo de Reporte</div>
+            <div class="report-types">
+                <div class="report-type selected" data-type="standard" onclick="selectType(this)">
+                    <div class="icon">📊</div>
+                    <div class="name">Estándar</div>
+                    <div class="desc">KPIs, avance por hito, evidencias, diagnóstico IA</div>
+                </div>
+                <div class="report-type" data-type="kickoff" onclick="selectType(this)">
+                    <div class="icon">🚀</div>
+                    <div class="name">Kickoff</div>
+                    <div class="desc">Alcance, equipo, cronograma, riesgos iniciales</div>
+                </div>
+                <div class="report-type" data-type="final" onclick="selectType(this)">
+                    <div class="icon">🏁</div>
+                    <div class="name">Cierre</div>
+                    <div class="desc">Resumen final, lecciones aprendidas, métricas</div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn-generate" id="generateBtn" onclick="generateReport()">
+            Generar Reporte PDF
+        </button>
+        
+        <div class="tech-badge">WeasyPrint • HTML/CSS → PDF</div>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="reports-list">
+            <h2>Reportes Generados</h2>
+            <div id="reportsList">
+                <p style="color: #666; font-size: 13px;">Cargando...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedType = 'standard';
+        
+        async function loadProjects() {
+            try {
+                const res = await fetch('/api/projects');
+                const projects = await res.json();
+                const select = document.getElementById('projectSelect');
+                select.innerHTML = '<option value="">Selecciona un proyecto...</option>';
+                for (const [key, name] of Object.entries(projects)) {
+                    select.innerHTML += `<option value="${key}">${name} (${key})</option>`;
+                }
+            } catch (e) {
+                document.getElementById('projectSelect').innerHTML = '<option value="">Error cargando proyectos</option>';
+            }
+        }
+        
+        async function loadReports() {
+            try {
+                const res = await fetch('/api/reports/list');
+                const reports = await res.json();
+                const container = document.getElementById('reportsList');
+                if (reports.length === 0) {
+                    container.innerHTML = '<p style="color: #666; font-size: 13px;">No hay reportes generados aún</p>';
+                    return;
+                }
+                container.innerHTML = reports.map(r => `
+                    <div class="report-item">
+                        <div>
+                            <div class="name">${r.name}</div>
+                            <div class="meta">${r.date} · ${r.size}</div>
+                        </div>
+                        <a href="/api/reports/download/${r.name}">Descargar ↓</a>
+                    </div>
+                `).join('');
+            } catch (e) {
+                document.getElementById('reportsList').innerHTML = '<p style="color: #666; font-size: 13px;">Error cargando reportes</p>';
+            }
+        }
+        
+        function selectType(el) {
+            document.querySelectorAll('.report-type').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedType = el.dataset.type;
+        }
+        
+        async function generateReport() {
+            const project = document.getElementById('projectSelect').value;
+            if (!project) {
+                showStatus('Selecciona un proyecto primero', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Generando reporte...';
+            showStatus('Conectando con Jira y generando PDF. Esto puede tomar unos segundos...', 'loading');
+            
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ project_key: project, report_type: selectedType })
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    showStatus(`
+                        ✓ Reporte generado exitosamente<br>
+                        <strong>${data.filename}</strong><br>
+                        <span style="color: #999;">Engine: ${data.engine || 'html'} · Tipo: ${data.report_type || selectedType}</span><br>
+                        <a href="/api/reports/download/${data.filename}" class="download-link">Descargar PDF ↓</a>
+                    `, 'success');
+                    loadReports();
+                } else {
+                    showStatus(`Error: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                showStatus(`Error de conexión: ${e.message}`, 'error');
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = 'Generar Reporte PDF';
+        }
+        
+        function showStatus(html, type) {
+            const el = document.getElementById('status');
+            el.className = `status ${type}`;
+            el.innerHTML = html;
+        }
+        
+        loadProjects();
+        loadReports();
+    </script>
+</body>
+</html>

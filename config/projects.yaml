@@ -21,3 +21,8 @@ projects:
     blockers_default: "Retraso en validación de VPN."
     cameras:
       - {name: "Cam Piloto 1", ip: "192.168.1.50", telegram: "@SafetyMind_IM_Alerts"}
+
+  GSA:
+    jira_key: "GSA"
+    name: "Gold Fields"
+    responsable: "Gloria Aburto"

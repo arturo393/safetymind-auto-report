@@ -1,37 +1,261 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe de Kickoff - SafetyMind</title>
+    <style>
+        @font-face {
+            font-family: 'Inter';
+            src: url('/app/static/fonts/Inter-Regular.ttf');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('/app/static/fonts/Inter-Bold.ttf');
+            font-weight: 700;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('/app/static/fonts/Inter-SemiBold.ttf');
+            font-weight: 600;
+        }
+        @page {
+            size: A4;
+            margin: 20mm 15mm 25mm 15mm;
+            @bottom-left {
+                content: "SafetyMind Kickoff - " {{ project_name }} " - " {{ report_date }};
+                font-family: 'Inter', sans-serif;
+                font-size: 7pt;
+                color: #999;
+            }
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: 'Inter', sans-serif;
+                font-size: 7pt;
+                color: #999;
+            }
+        }
+        :root {
+            --sm-primary: #ffed01;
+            --sm-black: #0a0a0a;
+            --sm-gray: #6b7280;
+            --sm-light: #f8f9fa;
+            --sm-border: #e5e7eb;
+            --sm-success: #22c55e;
+            --sm-info: #3b82f6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            font-size: 10pt;
+            line-height: 1.5;
+        }
+        .header {
+            background: #000000;
+            color: #ffffff;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .header-left h1 {
+            font-size: 18pt;
+            font-weight: 800;
+            margin: 0;
+        }
+        .header-left .meta {
+            font-size: 9pt;
+            color: #adadad;
+            margin-top: 6px;
+        }
+        .header-right {
+            font-size: 22pt;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        .header-right span { color: #ffed01; }
 
-{% block content %}
-<h2>1. Objetivos del Proyecto</h2>
-<p>{{ description }}</p>
+        .section-title {
+            background: #1f2937;
+            color: white;
+            font-size: 11pt;
+            font-weight: 700;
+            margin: 20px 0 12px 0;
+            padding: 8px 15px;
+            border-radius: 2px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .info-card {
+            border: 1px solid var(--sm-border);
+            padding: 15px;
+            border-radius: 4px;
+            background: white;
+        }
+        .info-card .label {
+            font-size: 7.5pt;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .info-card .value {
+            font-size: 11pt;
+            font-weight: 600;
+            color: var(--sm-black);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 9pt;
+        }
+        th {
+            background: #1f2937;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #374151;
+        }
+        td {
+            padding: 7px 10px;
+            border: 1px solid var(--sm-border);
+        }
+        tr:nth-child(even) td { background: #fafafa; }
+        .scope-box {
+            background: var(--sm-light);
+            border-left: 4px solid var(--sm-primary);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--sm-border);
+        }
+        .timeline-date {
+            font-weight: 700;
+            color: var(--sm-primary);
+            background: #000;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 8pt;
+            min-width: 80px;
+            text-align: center;
+        }
+        .timeline-content {
+            flex: 1;
+        }
+        .timeline-content h4 {
+            font-size: 9pt;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .timeline-content p {
+            font-size: 8pt;
+            color: #6b7280;
+        }
+        .footer-line {
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid var(--sm-border);
+            text-align: center;
+            font-size: 8pt;
+            color: var(--sm-gray);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Informe de Kickoff</h1>
+            <div class="meta">Proyecto: {{ project_name }} · {{ report_date }}{% if responsable %} · Responsable: {{ responsable }}{% endif %}</div>
+        </div>
+        <div class="header-right">SAFETY<span>MIND</span></div>
+    </div>
 
-<h2>2. Arquitectura del Sistema</h2>
-<div style="border: 1px solid #ddd; padding: 15px; background: #f9f9f9;">
-    <p><strong>Descripción de Componentes:</strong></p>
-    <p>{{ architecture_desc }}</p>
-</div>
+    <div class="section-title">1. Información General del Proyecto</div>
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="label">Proyecto</div>
+            <div class="value">{{ project_name }}</div>
+        </div>
+        <div class="info-card">
+            <div class="label">Fecha de Inicio</div>
+            <div class="value">{{ report_date }}</div>
+        </div>
+        <div class="info-card">
+            <div class="label">Responsable</div>
+            <div class="value">{{ responsable or 'Por asignar' }}</div>
+        </div>
+        <div class="info-card">
+            <div class="label">Total de Issues</div>
+            <div class="value">{{ total_issues or 0 }}</div>
+        </div>
+    </div>
 
-<h2>3. Cronograma del Proyecto (Gantt)</h2>
-<div class="gantt-container">
-    <img src="data:image/png;base64,{{ gantt_image }}">
-</div>
+    <div class="section-title">2. Alcance y Objetivos</div>
+    <div class="scope-box">
+        <p>{{ scope or 'Definición de alcance pendiente. Este documento establece los objetivos iniciales, entregables esperados y criterios de aceptación del proyecto.' }}</p>
+    </div>
 
-<h2>4. Plan de Actividades (Jira)</h2>
-<table>
-    <thead>
-        <tr>
-            <th style="width: 15%;">Calculated ID</th>
-            <th>Actividad</th>
-            <th style="width: 15%;">Estado</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for activity in activities %}
-        <tr>
-            <td>{{ activity.key }}</td>
-            <td>{{ activity.summary }}</td>
-            <td>{{ activity.status }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endblock %}
+    <div class="section-title">3. Equipo y Stakeholders</div>
+    <table>
+        <thead><tr><th>Rol</th><th>Nombre</th><th>Responsabilidad</th></tr></thead>
+        <tbody>
+            {% for member in team_members or [] %}
+            <tr><td>{{ member.role }}</td><td>{{ member.name }}</td><td>{{ member.responsibility }}</td></tr>
+            {% endfor %}
+            {% if not team_members %}
+            <tr><td>Project Manager</td><td>{{ responsable or 'Por asignar' }}</td><td>Gestión general del proyecto</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="section-title">4. Cronograma Inicial (Hitos Clave)</div>
+    {% for epic in epics or [] %}
+    <div class="timeline-item">
+        <div class="timeline-date">Hito {{ loop.index }}</div>
+        <div class="timeline-content">
+            <h4>{{ epic.name }}</h4>
+            <p>{{ epic.total_count }} tareas planificadas · Avance: {{ epic.percentage }}%</p>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="section-title">5. Riesgos Identificados</div>
+    <table>
+        <thead><tr><th>Riesgo</th><th>Probabilidad</th><th>Impacto</th><th>Mitigación</th></tr></thead>
+        <tbody>
+            {% for risk in risks or [] %}
+            <tr><td>{{ risk.name }}</td><td>{{ risk.probability }}</td><td>{{ risk.impact }}</td><td>{{ risk.mitigation }}</td></tr>
+            {% endfor %}
+            {% if not risks %}
+            <tr><td>Dependencias externas</td><td>Media</td><td>Alto</td><td>Identificar alternativas tempranas</td></tr>
+            <tr><td>Disponibilidad de recursos</td><td>Baja</td><td>Medio</td><td>Plan de contingencia asignado</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="section-title">6. Criterios de Éxito</div>
+    <div class="scope-box">
+        <ul style="margin-left: 20px;">
+            <li>Entrega dentro del cronograma planificado</li>
+            <li>Cumplimiento de los requisitos funcionales definidos</li>
+            <li>Aceptación formal del cliente/stakeholder</li>
+            <li>Documentación completa y actualizada</li>
+        </ul>
+    </div>
+
+    <div class="footer-line">SafetyMind Kickoff - {{ project_name }} - {{ report_date }}</div>
+</body>
+</html>

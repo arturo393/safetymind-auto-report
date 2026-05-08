@@ -1,0 +1,6 @@
+.git
+*.md
+data/
+archived_legacy/
+*.tar.gz
+*.pdf

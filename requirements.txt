@@ -1,4 +1,6 @@
 jira
+flask
+pyyaml
 pandas
 python-dotenv
 reportlab

@@ -1,0 +1,199 @@
+// SafetyMind Standard Report - Typst Template
+#set page(
+  paper: "a4",
+  margin: (top: 20mm, bottom: 20mm, left: 20mm, right: 20mm),
+)
+
+#let sm-primary = luma(93%) // #FFED01
+#let sm-black = luma(4%)
+#let sm-gray = luma(42%)
+#let sm-light = luma(97%)
+#let sm-border = luma(90%)
+#let sm-alert = rgb("#EF4444")
+#let sm-success = rgb("#22C55E")
+#let sm-warning = rgb("#F59E0B")
+
+#set text(font: ("Inter", "Arial", "Noto Sans"), size: 10pt, fill: sm-black)
+#set heading(numbering: none)
+#set par(leading: 1.2em)
+
+#show heading.where(level: 1): it => [
+  #block(
+    fill: none,
+    stroke: (bottom: 2pt + sm-primary),
+    inset: (bottom: 3pt),
+    text(size: 11pt, weight: "bold", uppercase(it.body))
+  )
+  #v(8pt)
+]
+
+#show heading.where(level: 2): it => [
+  #v(12pt)
+  #block(
+    stroke: (left: 4pt + sm-primary),
+    fill: sm-light,
+    inset: 6pt,
+    text(size: 10pt, weight: "bold", it.body)
+  )
+  #v(4pt)
+]
+
+// Header
+#align(center)[
+  #text(size: 18pt, weight: "bold", "RESUMEN DE GESTIÓN ESTRATÉGICA")
+  #v(3pt)
+  #text(size: 22pt, weight: "bold")[SAFETY#text(fill: sm-primary)[MIND]]
+  #v(3pt)
+  #text(size: 9pt, fill: sm-gray)[Snapshot #report-date# if responsable[ · Responsable: #responsable]]
+]
+
+#v(12pt)
+
+// KPI Section
+#block(
+  fill: sm-light,
+  radius: 6pt,
+  stroke: 1pt + sm-border,
+  inset: 16pt,
+  align(center)[
+    #text(size: 10pt, weight: "bold", letter-spacing: 1pt, "KPI: AVANCE REAL ACUMULADO")
+    #v(4pt)
+    #text(size: 36pt, weight: "bold")[#global-percentage%]
+  ]
+)
+
+#v(12pt)
+
+// AI Diagnosis
+#if ai-diagnosis [
+  #block(
+    fill: rgb("#FFFBEA"),
+    radius: 6pt,
+    stroke: (left: 4pt + sm-warning),
+    inset: 12pt,
+    [
+      #text(size: 11pt, weight: "bold")[DIAGNÓSTICO ESTRATÉGICO DE OPERACIÓN (IA)]
+      #v(4pt)
+      #text(size: 9.5pt, ai-diagnosis)
+    ]
+  )
+  #v(8pt)
+]
+
+// Section 1: Milestones
+= 1. Desempeño por Hito de Proyecto (% Avance)
+
+#table(
+  columns: (1fr, 1fr, 1fr),
+  fill: (_, y) => if calc.even(y) [sm-light] else [none],
+  stroke: (bottom: 1pt + sm-border),
+  // Header
+  [Hito / Épica][Avance][Estado]
+
+  #for epic in epics [
+    [#epic.name]
+    [#epic.percentage% (#epic.done_count/#epic.total_count)]
+    #if epic.percentage >= 75 [
+      #text(fill: sm-success)[● En línea]
+    ] #elif epic.percentage >= 40 [
+      #text(fill: sm-warning)[● En riesgo]
+    ] #else [
+      #text(fill: sm-alert)[● Crítico]
+    ]
+  ]
+)
+
+// Section 2: Completed
+= 2. Trabajo Completado y Validado (Resumen)
+
+#table(
+  columns: (1fr, 1fr, 2fr, 1fr),
+  fill: (_, y) => if calc.even(y) [sm-light] else [none],
+  stroke: (bottom: 1pt + sm-border),
+  [ID Jira][Hito / Épica][Actividad Realizada][Cierre]
+
+  #for item in completed-items [
+    [#item.key][#item.epic][#item.summary][#item.date]
+  ]
+)
+
+// Section 3: In Progress
+= 3. Estado del Trabajo en Ejecución (Focus)
+
+#table(
+  columns: (1fr, 1fr, 2fr, 1fr),
+  fill: (_, y) => if calc.even(y) [sm-light] else [none],
+  stroke: (bottom: 1pt + sm-border),
+  [ID Jira][Hito / Épica][Actividad en Curso][Estado Actual]
+
+  #for item in in-progress-items [
+    [#item.key][#item.epic][#item.summary][#item.status]
+  ]
+)
+
+// Section 4: Risks
+= 4. Riesgos y Bloqueos (Prioridad Ejecutiva)
+
+#if overdue-items.len() > 0 [
+  #text(weight: "bold")[⚠ ALERTA: ÍTEMS VENCIDOS (Ruta Crítica)]
+] #else [
+  ✓ Operación normal.
+]
+
+#if blocked-items.len() > 0 [
+  #v(4pt)
+  #text(weight: "bold")[🚫 BLOQUEOS ACTIVOS Y GESTIÓN DE OBS.]
+
+  #table(
+    columns: (1fr, 1fr, 2fr, 2fr),
+    fill: (_, y) => if calc.even(y) [sm-light] else [none],
+    stroke: (bottom: 1pt + sm-border),
+    [ID][Sobre Hito][Pendiente][Observación / Status]
+
+    #for item in blocked-items [
+      [#item.key][#item.epic][#item.summary][#item.comment]
+    ]
+  )
+]
+
+// Section 5: Planned
+= 5. Plan del Próximo Período (Prioridades)
+
+#table(
+  columns: (1fr, 1fr, 2fr, 1fr),
+  fill: (_, y) => if calc.even(y) [sm-light] else [none],
+  stroke: (bottom: 1pt + sm-border),
+  [ID Jira][Hito / Épica][Actividad Planificada][Prioridad]
+
+  #for item in planned-items [
+    [#item.key][#item.epic][#item.summary][#item.priority]
+  ]
+)
+
+// Section 6: Evidence
+#if evidence-items.len() > 0 [
+  = 6. Anexo de Evidencias Logradas (Telemetría Visual)
+
+  #grid(
+    columns: (1fr, 1fr),
+    gutter: 12pt,
+    #for ev in evidence-items [
+      #block(
+        stroke: 1pt + sm-border,
+        radius: 4pt,
+        inset: 4pt,
+        [
+          #text(size: 8pt, weight: "bold")[Item: #ev.key — #ev.summary]
+          #v(4pt)
+          #image(ev.image-path, width: 100%)
+        ]
+      )
+    ]
+  )
+]
+
+// Footer
+#v(12pt)
+#align(center)[
+  #text(size: 8pt, fill: sm-gray)[SafetyMind - #project-name - #report-date]
+]

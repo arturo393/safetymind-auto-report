@@ -1,0 +1,176 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{enumitem}
+\usepackage{lastpage}
+
+\geometry{top=20mm, bottom=25mm, left=18mm, right:18mm}
+
+\definecolor{smprimary}{HTML}{FFED01}
+\definecolor{smblack}{HTML}{0A0A0A}
+\definecolor{smgray}{HTML}{6B7280}
+\definecolor{smlight}{HTML}{F8F9FA}
+\definecolor{smalert}{HTML}{EF4444}
+\definecolor{smsuccess}{HTML}{22C55E}
+\definecolor{smwarning}{HTML}{F59E0B}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\small\textcolor{smgray}{SafetyMind - {{ project_name }} - {{ report_date }} \quad P\'agina \thepage\ de \pageref{LastPage}}}
+\renewcommand{\headrulewidth}{0pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\renewcommand{\arraystretch}{1.15}
+
+\newcommand{\sectiontitle}[1]{%
+  \vspace{12pt}%
+  {\large\bfseries\color{smblack}#1}%
+  \vspace{2pt}%
+  \textcolor{smprimary}{\rule{\textwidth}{2pt}}%
+  \vspace{6pt}%
+}
+
+\begin{document}
+
+% Header
+\begin{center}
+    {\Huge\bfseries Resumen de Gesti\'on Estrat\'egica}
+    
+    \vspace{4mm}
+    {\Huge\bfseries SAFETY{\color{smprimary}MIND}}
+    
+    \vspace{3mm}
+    {\small\textcolor{smgray}{Snapshot {{ report_date }}{% if responsable %} $\cdot$ Responsable: {{ responsable }}{% endif %}}}
+\end{center}
+
+\vspace{6mm}
+
+% KPI
+\begin{tikzpicture}
+    \draw[fill=smlight, draw=gray!30, rounded corners=4pt] (0,0) rectangle (\textwidth, 2.2);
+    \node at (\textwidth/2, 1.6) {\small\textcolor{smgray}{\textbf{KPI: AVANCE REAL ACUMULADO}}};
+    \node at (\textwidth/2, 0.7) {\Huge\bfseries {{ global_percentage }}\%};
+\end{tikzpicture}
+
+% AI Diagnosis
+{% if ai_diagnosis %}
+\vspace{6mm}
+\noindent\colorbox{yellow!10}{%
+    \parbox{\dimexpr\textwidth-2\fboxsep\relax}{%
+        \vspace{2pt}\textbf{DIAGN\'OSTICO ESTRAT\'EGICO DE OPERACI\'ON (IA)}\vspace{3pt}
+        
+        \small{{ ai_diagnosis }}
+        \vspace{2pt}
+    }%
+}
+{% endif %}
+
+% Section 1: Milestones
+\sectiontitle{1. Desempe\~no por Hito de Proyecto (\% Avance)}
+
+\noindent\begin{tabularx}{\textwidth}{@{}p{4cm} c c p{2.5cm}@{}}
+    \toprule
+    \rowcolor{smblack}\color{white}\textbf{Hito / \'Epica} & \color{white}\textbf{Avance} & \color{white}\textbf{Progreso} & \color{white}\textbf{Estado} \\
+    \midrule
+    {% for epic in epics %}
+    \textbf{{% raw %}}{% endraw %}{{ epic.name }} & \textbf{{% raw %}}{% endraw %}{{ epic.percentage }}\% & {{ epic.done_count }}/{{ epic.total_count }} & 
+    {% if epic.percentage >= 75 %}\textcolor{smsuccess}{\textbullet\ En l\'inea}{% elif epic.percentage >= 40 %}\textcolor{smwarning}{\textbullet\ En riesgo}{% else %}\textcolor{smalert}{\textbullet\ Cr\'itico}{% endif %} \\
+    {% endfor %}
+    \bottomrule
+\end{tabularx}
+
+% Section 2: Completed
+\sectiontitle{2. Trabajo Completado y Validado (Resumen)}
+
+\noindent\begin{tabularx}{\textwidth}{@{}p{1.8cm} p{3cm} X p{2cm}@{}}
+    \toprule
+    \rowcolor{smblack}\color{white}\textbf{ID Jira} & \color{white}\textbf{Hito / \'Epica} & \color{white}\textbf{Actividad Realizada} & \color{white}\textbf{Cierre} \\
+    \midrule
+    {% for item in completed_items %}
+    \textbf{{% raw %}}{% endraw %}{{ item.key }} & {{ item.epic }} & {{ item.summary }} & {{ item.date }} \\
+    {% endfor %}
+    \bottomrule
+\end{tabularx}
+
+% Section 3: In Progress
+\sectiontitle{3. Estado del Trabajo en Ejecuci\'on (Focus)}
+
+\noindent\begin{tabularx}{\textwidth}{@{}p{1.8cm} p{3cm} X p{2cm}@{}}
+    \toprule
+    \rowcolor{smblack}\color{white}\textbf{ID Jira} & \color{white}\textbf{Hito / \'Epica} & \color{white}\textbf{Actividad en Curso} & \color{white}\textbf{Estado Actual} \\
+    \midrule
+    {% for item in in_progress_items %}
+    \textbf{{% raw %}}{% endraw %}{{ item.key }} & {{ item.epic }} & {{ item.summary }} & {{ item.status }} \\
+    {% endfor %}
+    \bottomrule
+\end{tabularx}
+
+% Section 4: Risks
+\sectiontitle{4. Riesgos y Bloqueos (Prioridad Ejecutiva)}
+
+{% if overdue_items %}
+\textbf{\textcolor{smalert}{\textwarning} ALERTA: \'ITEMS VENCIDOS (Ruta Cr\'itica)}
+{% else %}
+\textcolor{smsuccess}{\textbullet} Operaci\'on normal.
+{% endif %}
+
+{% if blocked_items %}
+\vspace{3mm}
+\textbf{\textcolor{smalert}{\xmark} BLOQUEOS ACTIVOS Y GESTI\'ON DE OBS.}
+
+\noindent\begin{tabularx}{\textwidth}{@{}p{1.8cm} p{3cm} X X@{}}
+    \toprule
+    \rowcolor{smblack}\color{white}\textbf{ID} & \color{white}\textbf{Sobre Hito} & \color{white}\textbf{Pendiente} & \color{white}\textbf{Observaci\'on / Status} \\
+    \midrule
+    {% for item in blocked_items %}
+    \textbf{{% raw %}}{% endraw %}{{ item.key }} & {{ item.epic }} & {{ item.summary }} & {{ item.comment }} \\
+    {% endfor %}
+    \bottomrule
+\end{tabularx}
+{% endif %}
+
+% Section 5: Planned
+\sectiontitle{5. Plan del Pr\'oximo Per\'iodo (Prioridades)}
+
+\noindent\begin{tabularx}{\textwidth}{@{}p{1.8cm} p{3cm} X p{2cm}@{}}
+    \toprule
+    \rowcolor{smblack}\color{white}\textbf{ID Jira} & \color{white}\textbf{Hito / \'Epica} & \color{white}\textbf{Actividad Planificada} & \color{white}\textbf{Prioridad} \\
+    \midrule
+    {% for item in planned_items %}
+    \textbf{{% raw %}}{% endraw %}{{ item.key }} & {{ item.epic }} & {{ item.summary }} & {{ item.priority }} \\
+    {% endfor %}
+    \bottomrule
+\end{tabularx}
+
+% Section 6: Evidence
+{% if evidence_items %}
+\sectiontitle{6. Anexo de Evidencias Logradas (Telemetr\'ia Visual)}
+
+\begin{center}
+\begin{tabular}{cc}
+    {% for ev in evidence_items %}
+    \begin{minipage}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{{% raw %}}{% endraw %}{{ ev.image_path }}
+        \vspace{2mm}
+        \small\textbf{Item: {% raw %}{{% endraw %} ev.key {% raw %}}}{% endraw %} --- {{ ev.summary }}
+    \end{minipage}
+    {% if loop.index % 2 == 0 %} \\ {% endif %}
+    {% endfor %}
+\end{tabular}
+\end{center}
+{% endif %}
+
+\end{document}

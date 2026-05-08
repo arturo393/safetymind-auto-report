@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumen de Gestión Estratégica</title>
+    <style>
+        @font-face {
+            font-family: 'Inter';
+            src: url('/app/static/fonts/Inter-Regular.ttf');
+            font-weight: 400;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('/app/static/fonts/Inter-Bold.ttf');
+            font-weight: 700;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('/app/static/fonts/Inter-SemiBold.ttf');
+            font-weight: 600;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('/app/static/fonts/Inter-Medium.ttf');
+            font-weight: 500;
+            font-style: normal;
+        }
+        @page {
+            size: A4;
+            margin: 20mm 15mm 25mm 15mm;
+            @bottom-left {
+                content: "SafetyMind - " {{ project_name }} " - " {{ report_date }};
+                font-family: 'Inter', sans-serif;
+                font-size: 7pt;
+                color: #999;
+            }
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: 'Inter', sans-serif;
+                font-size: 7pt;
+                color: #999;
+            }
+        }
+        :root {
+            --sm-primary: #ffed01;
+            --sm-black: #0a0a0a;
+            --sm-gray: #6b7280;
+            --sm-light: #f8f9fa;
+            --sm-border: #e5e7eb;
+            --sm-alert: #ef4444;
+            --sm-success: #22c55e;
+            --sm-warning: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+        .header {
+            background: #000000;
+            color: #ffffff;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .header-left h1 {
+            font-size: 16pt;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+        .header-left .meta {
+            font-size: 8pt;
+            color: #adadad;
+            margin-top: 4px;
+        }
+        .header-right {
+            font-size: 20pt;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        .header-right span { color: #ffed01; }
+
+        .top-summary {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .kpi-box {
+            flex: 0 0 240px;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+        }
+        .kpi-box .label {
+            font-size: 7.5pt;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .kpi-box .value {
+            font-size: 34pt;
+            font-weight: 800;
+            color: #000000;
+            margin-bottom: 8px;
+        }
+        .kpi-box .bar-bg {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 2px;
+        }
+        .kpi-box .bar-fill {
+            height: 100%;
+            background: #f59e0b;
+            border-radius: 2px;
+        }
+
+        .ia-box {
+            flex: 1;
+            background: #fffdf2;
+            border: 1px solid #ffed01;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .ia-box h2 {
+            font-size: 9pt;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            color: #000000;
+        }
+        .ia-box p {
+            font-size: 8.5pt;
+            color: #374151;
+            text-align: justify;
+            line-height: 1.5;
+        }
+        .section-title {
+            background: #1f2937;
+            color: white;
+            font-size: 10.5pt;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin: 25px 0 12px 0;
+            padding: 8px 15px;
+            border-radius: 2px;
+        }
+        .milestone-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .milestone-card {
+            background: white;
+            border-radius: 4px;
+            padding: 10px;
+            border: 1px solid var(--sm-border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .milestone-card .name {
+            font-size: 8pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--sm-black);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .milestone-card .progress {
+            font-size: 9pt;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .milestone-card .progress span { font-size: 8pt; font-weight: 400; color: var(--sm-gray); }
+        .milestone-card .bar {
+            height: 5px;
+            background: #f3f4f6;
+            border-radius: 2.5px;
+            overflow: hidden;
+        }
+        .milestone-card .bar-fill {
+            height: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 8pt;
+        }
+        th {
+            background: #1f2937;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            border: 1px solid #374151;
+        }
+        td {
+            padding: 7px 10px;
+            border: 1px solid var(--sm-border);
+        }
+        tr:nth-child(even) td { background: #fafafa; }
+
+        .risk-alert {
+            color: #b91c1c;
+            font-weight: 800;
+            font-size: 10pt;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .risk-normal {
+            color: #15803d;
+            font-weight: 600;
+            font-size: 9pt;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .blocked-label {
+            display: block;
+            background: #fff;
+            padding: 8px 0;
+            font-weight: 800;
+            color: var(--sm-black);
+            font-size: 9pt;
+            border-top: 2px solid var(--sm-primary);
+            margin-top: 15px;
+        }
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .evidence-item {
+            border: 1px solid var(--sm-border);
+            border-radius: 6px;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        .evidence-item .caption {
+            padding: 6px 8px;
+            font-size: 8pt;
+            font-weight: 600;
+            background: var(--sm-light);
+            border-bottom: 1px solid var(--sm-border);
+        }
+        .evidence-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7.5pt;
+            font-weight: 600;
+        }
+        .status-in-progress { background: #dbeafe; color: #1e40af; }
+        .status-blocked { background: #fee2e2; color: #991b1b; }
+        .footer-line {
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid var(--sm-border);
+            text-align: center;
+            font-size: 8pt;
+            color: var(--sm-gray);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Resumen de Gestión Estratégica</h1>
+            <div class="meta">Snapshot {{ report_date }}{% if responsable %} · Responsable: {{ responsable }}{% endif %}</div>
+        </div>
+        <div class="header-right">SAFETY<span>MIND</span></div>
+    </div>
+
+    <div class="top-summary">
+        <div class="kpi-box">
+            <div class="label">KPI: Avance Real Acumulado</div>
+            <div class="value">{{ global_percentage }}%</div>
+            <div class="bar-bg">
+                <div class="bar-fill" style="width: {{ global_percentage }}%;"></div>
+            </div>
+        </div>
+
+        <div class="ia-box">
+            <h2>Diagnóstico Estratégico de Operación (IA)</h2>
+            <p>{{ ai_diagnosis or 'No se dispone de diagnóstico IA para este snapshot.' }}</p>
+        </div>
+    </div>
+
+    <div class="section-title">1. Desempeño por Hito de Proyecto (% Avance)</div>
+    <div class="milestone-grid">
+        {% for epic in epics %}
+        <div class="milestone-card">
+            <div class="name">{{ epic.name }}</div>
+            <div class="progress">Avance: {{ epic.percentage }}% <span>({{ epic.done_count }}/{{ epic.total_count }})</span></div>
+            <div class="bar"><div class="bar-fill" style="width: {{ epic.percentage }}%; background: {% if epic.percentage >= 75 %}#22c55e{% elif epic.percentage >= 40 %}#f59e0b{% else %}#ef4444{% endif %};"></div></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section-title">2. Trabajo Completado y Validado (Resumen)</div>
+    <table>
+        <thead><tr><th>ID Jira</th><th>Hito / Épica</th><th>Actividad Realizada</th><th>Cierre</th></tr></thead>
+        <tbody>
+            {% for item in completed_items %}
+            <tr><td>{{ item.key }}</td><td>{{ item.epic }}</td><td>{{ item.summary }}</td><td>{{ item.date }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">3. Estado del Trabajo en Ejecución (Focus)</div>
+    <table>
+        <thead><tr><th>ID Jira</th><th>Hito / Épica</th><th>Actividad en Curso</th><th>Estado Actual</th></tr></thead>
+        <tbody>
+            {% for item in in_progress_items %}
+            <tr><td>{{ item.key }}</td><td>{{ item.epic }}</td><td>{{ item.summary }}</td><td>{{ item.status }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">4. Riesgos y Bloqueos (Prioridad Ejecutiva)</div>
+    <div class="risks-content">
+        {% if overdue_items %}
+        <div class="risk-alert">⚠ ALERTA: ÍTEMS VENCIDOS (Ruta Crítica)</div>
+        {% else %}
+        <div class="risk-normal">✓ Operación normal.</div>
+        {% endif %}
+    </div>
+
+    {% if blocked_items %}
+    <div class="blocked-label">🚫 BLOQUEOS ACTIVOS Y GESTIÓN DE OBS.</div>
+    <table>
+        <thead><tr><th>ID</th><th>Sobre Hito</th><th>Pendiente</th><th>Observación / Status</th></tr></thead>
+        <tbody>
+            {% for item in blocked_items %}
+            <tr><td>{{ item.key }}</td><td>{{ item.epic }}</td><td>{{ item.summary }}</td><td>{{ item.comment }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <div class="section-title">5. Plan del Próximo Período (Prioridades)</div>
+    <table>
+        <thead><tr><th>ID Jira</th><th>Hito / Épica</th><th>Actividad Planificada</th><th>Prioridad</th></tr></thead>
+        <tbody>
+            {% for item in planned_items %}
+            <tr><td>{{ item.key }}</td><td>{{ item.epic }}</td><td>{{ item.summary }}</td><td>{{ item.priority }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if evidence_items %}
+    <div class="section-title">6. Anexo de Evidencias Logradas (Telemetría Visual)</div>
+    <div class="evidence-grid">
+        {% for ev in evidence_items %}
+        <div class="evidence-item">
+            <div class="caption">Item: {{ ev.key }} — {{ ev.summary }}</div>
+            <img src="data:image/{{ ev.ext }};base64,{{ ev.image_b64 }}">
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="footer-line">SafetyMind - {{ project_name }} - {{ report_date }}</div>
+</body>
+</html>
