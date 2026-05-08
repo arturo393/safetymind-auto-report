@@ -3,3 +3,10 @@ __pycache__/
 .env
 .DS_Store
 venv/
+jira-portal/
+jira-api/
+test_reports/
+*.pdf
+node_modules/
+__pycache__/
+*.pyc

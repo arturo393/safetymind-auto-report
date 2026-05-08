@@ -49,8 +49,35 @@ def health():
 def get_projects():
     try:
         config = load_config()
-        projects = config.get('projects', {})
-        result = {k: v.get('name', k) for k, v in projects.items()}
+        config_projects = config.get('projects', {})
+        result = {}
+        for k, v in config_projects.items():
+            result[k] = {
+                'name': v.get('name', k),
+                'description': v.get('description', ''),
+                'responsable': v.get('responsable', ''),
+                'source': 'config'
+            }
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/jira-projects', methods=['GET'])
+def get_jira_projects():
+    try:
+        jira = get_jira_client()
+        jira_conn = jira.jira
+        projects = jira_conn.projects()
+        result = {}
+        for p in projects:
+            key = getattr(p, 'key', '')
+            name = getattr(p, 'name', key)
+            result[key] = {
+                'name': name,
+                'description': getattr(p, 'description', ''),
+                'lead': str(getattr(p, 'lead', '')),
+                'source': 'jira'
+            }
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -66,12 +93,29 @@ def generate_report():
             return jsonify({"error": "project_key required"}), 400
         
         config = load_config()
-        if project_key not in config.get('projects', {}):
-            return jsonify({"error": f"Project {project_key} not found"}), 404
+        config_projects = config.get('projects', {})
         
-        project_config = config['projects'][project_key]
-        jira = get_jira_client()
-        jira_conn = jira.jira
+        if project_key not in config_projects:
+            jira = get_jira_client()
+            jira_conn = jira.jira
+            jira_projects = jira_conn.projects()
+            matched = None
+            for p in jira_projects:
+                if getattr(p, 'key', '') == project_key:
+                    matched = p
+                    break
+            if not matched:
+                return jsonify({"error": f"Project {project_key} not found in Jira"}), 404
+            project_config = {
+                'jira_key': project_key,
+                'name': getattr(matched, 'name', project_key),
+                'description': getattr(matched, 'description', ''),
+                'responsable': str(getattr(matched, 'lead', '')),
+            }
+        else:
+            jira = get_jira_client()
+            jira_conn = jira.jira
+            project_config = config_projects[project_key]
         
         report_types = {
             'standard': generate_standard_report,
