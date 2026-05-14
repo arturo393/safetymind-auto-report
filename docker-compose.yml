@@ -1,29 +1,49 @@
+name: "ar"
 services:
   jira-api:
+    container_name: ar-api
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
     environment:
       - JIRA_URL=${JIRA_URL}
       - JIRA_EMAIL=${JIRA_EMAIL}
       - JIRA_API_TOKEN=${JIRA_API_TOKEN}
     volumes:
       - ./reports:/app/reports
+    ports:
+      - "8005:8080"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.arapi.rule=Host(`api.report.safetymind.local`)"
+      - "traefik.http.services.arapi.loadbalancer.server.port=8080"
+    networks:
+      - traefik-public
 
   jira-portal:
-    image: safetymind-jira-portal
-    ports:
-      - "8501:8501"
+    container_name: ar-portal
+    image: safetymind-auto-report-jira-portal
+    pull_policy: never
     environment:
-      - NEXT_PUBLIC_API_URL=http://172.18.0.2:8080
+      - NEXT_PUBLIC_API_URL=http://api.report.safetymind.local
     depends_on:
       - jira-api
+    ports:
+      - "8501:8501"
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.arportal.rule=Host(`report.safetymind.local`)"
+      - "traefik.http.services.arportal.loadbalancer.server.port=8501"
+    networks:
+      - traefik-public
+
+networks:
+  traefik-public:
+    external: true
