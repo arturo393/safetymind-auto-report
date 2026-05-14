@@ -1,0 +1,96 @@
+{{ define "content" }}
+<!-- Executive Summary with RAG Status -->
+<div class="progress-section">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <span style="font-size: 14pt; font-weight: bold;">Salud del Proyecto</span>
+        </div>
+        <div>
+            <!-- RAG Status Indicators -->
+            <span style="padding: 5px 10px; background: #4caf50; color: white; border-radius: 4px; font-weight: bold;">ALCANCE: OK</span>
+            <span style="padding: 5px 10px; background: {{ .time_color }}; color: white; border-radius: 4px; font-weight: bold;">TIEMPO: {{ .time_status }}</span>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <strong>Progreso General Completado</strong>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="percentage">{{ .percentage }}%</span>
+            <div style="width: 80%;">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: {{ .percentage }}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Critical Path / Risks (PMBOK Risk Management) -->
+<h2>Gestión de Riesgos y Bloqueos</h2>
+{{ if .critical_path }}
+<div class="critical-path">
+    <p><strong>⚠️ Atención Requerida (Ruta Crítica):</strong></p>
+    <ul>
+        {{ range .critical_path }}
+        <li><strong>{{ .key }}</strong>: {{ .summary }} <br> <span style="font-size: 0.9em; color: #d32f2f;">{{ .reason }}</span></li>
+        {{ end }}
+    </ul>
+</div>
+{{ end }}
+
+{{ if .blockers }}
+<div class="blocker-box" style="margin-top: 15px;">
+    <p><strong>⛔ Impedimentos Actuales:</strong></p>
+    <p>{{ .blockers }}</p>
+</div>
+{{ else }}
+<div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-left: 4px solid #4caf50;">
+    <p>No hay bloqueos activos reportados.</p>
+</div>
+{{ end }}
+
+<!-- Completed Work (Retrospective) -->
+<h2>Hitos Alcanzados (Último Periodo)</h2>
+{{ if .completed_tasks }}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tarea Completada</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ range .completed_tasks }}
+        <tr>
+            <td>{{ .key }}</td>
+            <td>{{ .summary }}</td>
+            <td>{{ .updated }}</td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+{{ else }}
+<p>No se cerraron tareas en este periodo.</p>
+{{ end }}
+
+<!-- Next Steps (Lookahead) -->
+<h2>Próximos Pasos (Planificación)</h2>
+<ul>
+    {{ $limit := 5 }}
+    {{ $count := 0 }}
+    {{ range .pending_tasks }}
+        {{ if lt $count $limit }}
+        <li>Procesar: <strong>{{ .summary }}</strong> ({{ .priority }})</li>
+        {{ end }}
+        {{ $count = add $count 1 }}
+    {{ end }}
+</ul>
+
+{{ if .description }}
+<div class="progress-section">
+    <h2>Resumen Ejecutivo</h2>
+    <p>{{ .description }}</p>
+</div>
+{{ end }}
+{{ end }}

@@ -1,0 +1,13 @@
+projects:
+  IM:
+    name: "SafetyMind Platform"
+    jira_key: "IM"
+    description: "SafetyMind Internal Management"
+    project_manager: "Arturo Veras"
+    client: "Internal"
+  GMF:
+    name: "Global Manufacturing"
+    jira_key: "GMF"
+    description: "Global manufacturing project"
+    project_manager: "Arturo Veras"
+    client: "GMF Corp"
